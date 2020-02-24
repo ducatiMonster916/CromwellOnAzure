@@ -1,10 +1,10 @@
 # Advanced configuration and debugging for Cromwell on Azure
 This article describes advanced features that allow customization and debugging of Cromwell on Azure.
 
-## Expand data disk for MySQL database storage for Cromwell
+## [Expand data disk for MySQL database storage for Cromwell](#MySQL-datadisk)
 To ensure that no data is corrupted for MySQL backed storage for Cromwell, Cromwell on Azure mounts MySQL files on to an Azure Managed Data Disk of size 32G. In case there is a need to increase the size of this data disk, follow instructions [here](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/expand-disks#expand-an-azure-managed-disk).
 
-## Connect to the host VM
+## [Connect to the host VM](#SSH-host)
 To get logs from all the docker containers or to use the Cromwell REST API endpoints, you may want to connect to the Linux host VM. At installation, a user is created to allow managing the host VM with username "vmadmin". The password is randomly generated and shown during installation. If you need to reset your VM password, you can do this using the Azure Portal or by following these [instructions](https://docs.microsoft.com/en-us/azure/virtual-machines/troubleshooting/reset-password). 
 
 ![Reset password](/docs/screenshots/resetpassword.PNG)
@@ -17,7 +17,7 @@ Paste the ssh connectiong string in a command line, PowerShell or terminal appli
 
 ![Connect with SSH](/docs/screenshots/connectssh.PNG)
 
-### How to get container logs to debug issues
+### [How to get container logs to debug issues](#Container-logs)
 The host VM is running multiple docker containers that enable Cromwell on Azure - mysql, broadinstitute/cromwell, cromwellonazure/tes, cromwellonazure/triggerservice. On rare occasions, you may want to debug and diagnose issues with the docker containers. After logging in to the VM, run: 
 ```
 sudo docker ps
@@ -28,7 +28,7 @@ This command will list the names of all the docker containers currently running.
 sudo docker logs 'containerName'
 ```
 
-### Access the Cromwell REST API directly from Linux host VM
+### [Access the Cromwell REST API directly from Linux host VM](#Cromwell-API)
 Cromwell is run in server mode on the Linux host VM and can be accessed via curl as described below:
 
 ***Get all workflows***<br/>
@@ -43,7 +43,7 @@ Cromwell is run in server mode on the Linux host VM and can be accessed via curl
 
 You can perform other Cromwell API calls following a similar pattern. To see all available API endpoints, see Cromwell's REST API [here](https://cromwell.readthedocs.io/en/stable/api/RESTAPI/)
 
-## Connect to custom Azure resources
+## [Connect to custom Azure resources](#Custom-azresources)
 Cromwell on Azure uses [managed identities](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) to allow the host VM to connect to Azure resources in a simple and secure manner.  At the time of installation, a managed identity is created and associated with the host VM. You can find the identity via the Azure Portal by searching for the VM name in Azure Active Directory, under "All Applications". Or you may use Azure CLI `show` command as described [here](https://docs.microsoft.com/en-us/cli/azure/vm/identity?view=azure-cli-latest#az-vm-identity-show).
 
 To allow the host VM to connect to **custom** Azure resources like Storage Account, Batch Account etc. you can use the [Azure Portal](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) or [Azure CLI](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-cli) to find the managed identity of the host VM and add it as a Contributor to the required Azure resource.<br/>
@@ -54,11 +54,11 @@ For these changes to take effect, be sure to restart your Cromwell on Azure VM t
 
 ![Restart VM](/docs/screenshots/restartVM.png)
 
-### Use private docker containers 
+### [Use private docker containers](#Private-Containers)
 Cromwell on Azure supports private docker images for your WDL tasks hosted on [Azure Container Registry or ACR](https://docs.microsoft.com/en-us/azure/container-registry/).
 To allow the host VM to use an ACR, add the VM identity as a Contributor to the Container Registry via Azure Portal or Azure CLI.<br/>
 
-### Mount another storage account
+### [Mount another storage account](#Add-StorageAccount)
 Navigate to the "configuration" container in the Cromwell on Azure Storage account. Replace YOURSTORAGEACCOUNTNAME with your storage account name and YOURCONTAINERNAME with your container name in the `containers-to-mount` file below:
 ```
 /YOURSTORAGEACCOUNTNAME/YOURCONTAINERNAME/
@@ -76,7 +76,7 @@ When using the newly mounted storage account in your inputs JSON file, use the p
 
 For these changes to take effect, be sure to restart your Cromwell on Azure VM through the Azure Portal UI.
 
-### Change batch account
+### [Change batch account](#Change-BatchAccount)
 Log on to the host VM using the ssh connection string as described above. Replace `BatchAccountName` environment variable for the "tes" service in the `docker-compose.yml` file with the name of the desired Batch account and save your changes.<br/>
 
 ```
@@ -89,7 +89,7 @@ To allow the host VM to read prices and information about types of machines avai
 
 For these changes to take effect, be sure to restart your Cromwell on Azure VM through the Azure Portal UI or run `sudo reboot`. or run `sudo reboot`.
 
-### Use dedicated VMs for all your tasks
+### [Use dedicated VMs for all your tasks](#Preempted)
 By default, we are using an environment variable `UsePreemptibleVmsOnly` set to true, to always use low priority Azure Batch nodes.<br/>
 
 If you prefer to use dedicated Azure Batch nodes, log on to the host VM using the ssh connection string as described above. Replace `UsePreemptibleVmsOnly` environment variable for the "tes" service to "false" in the `docker-compose.yml` file and save your changes.<br/>
